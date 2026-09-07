@@ -27,7 +27,7 @@ const validatePhone = (v) => /^\d{10}$/.test(v);
 const validatePincode = (v) => /^\d{6}$/.test(v);
 const validateCard = (v) => /^\d{16}$/.test(v.replace(/\s/g, ""));
 const validateCVV = (v) => /^\d{3}$/.test(v);
-const validateUPI = (v) => /^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v);
+const validateUPI = (v) => /^[\w.]{2,}@[a-zA-Z]{2,}$/.test(v);
 const validateExpiry = (v) => {
   if (!/^\d{2}\/\d{2}$/.test(v)) return false;
   const [mm, yy] = v.split("/").map(Number);
@@ -1082,7 +1082,7 @@ function ContactPage({ goBack }) {
 
 export default function App() {
   const [page, setPage] = useState("home");
-  const [history, setHistory] = useState([]);
+  const [ setHistory] = useState([]);
   const [productId, setProductId] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [cart, setCart] = useState({});
