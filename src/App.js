@@ -27,7 +27,7 @@ const validatePhone = (v) => /^\d{10}$/.test(v);
 const validatePincode = (v) => /^\d{6}$/.test(v);
 const validateCard = (v) => /^\d{16}$/.test(v.replace(/\s/g, ""));
 const validateCVV = (v) => /^\d{3}$/.test(v);
-const validateUPI = (v) => /^[\w.]{2,}@[a-zA-Z]{2,}$/.test(v);
+const validateUPI = (v) => /^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v);
 const validateExpiry = (v) => {
   if (!/^\d{2}\/\d{2}$/.test(v)) return false;
   const [mm, yy] = v.split("/").map(Number);
@@ -643,7 +643,7 @@ function CartPage({ cart, changeQty, goto, requireLoginThen, goBack }) {
 
 const qtyBtn = { width: "28px", height: "28px", borderRadius: "50%", border: `1px solid ${PRIMARY}`, background: "#fff", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" };
 
-function LoginPage({ goto, users, login, pendingRedirect, justSignedUpEmail, goBack }) {
+function LoginPage({ goto, users, login, pendingRedirect, clearPendingRedirect, justSignedUpEmail, goBack }) {
   const [email, setEmail] = useState(justSignedUpEmail || "");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -660,7 +660,9 @@ function LoginPage({ goto, users, login, pendingRedirect, justSignedUpEmail, goB
       return setErrors({ form: "Invalid email or password." });
     }
     login(found);
-    goto(pendingRedirect || "home");
+    const target = pendingRedirect || "home";
+    clearPendingRedirect();
+    goto(target);
   }
 
   return (
@@ -745,7 +747,7 @@ function AccountPage({ user, logout, goto, goBack, orders }) {
           <h2 style={{ color: PRIMARY, marginBottom: "4px" }}>Hi, {user.name}</h2>
           <p style={{ color: "#666", fontSize: "14px" }}>{user.email}</p>
         </div>
-        
+
         <div style={{ borderTop: "1px solid #eee", marginTop: "20px", paddingTop: "20px" }}>
           <h4 style={{ color: PRIMARY, marginBottom: "12px" }}>Your Orders ({orders.length})</h4>
           {orders.length === 0 ? (
@@ -1082,12 +1084,12 @@ function ContactPage({ goBack }) {
 
 export default function App() {
   const [page, setPage] = useState("home");
-  const [ setHistory] = useState([]);
+  const [history, setHistory] = useState([]);
   const [productId, setProductId] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [cart, setCart] = useState({});
   const [users, setUsers] = useState([]);
-  const [user, setUser]  = useState(null);
+  const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [currentOrderId, setCurrentOrderId] = useState(null);
   const [pendingRedirect, setPendingRedirect] = useState(null);
@@ -1159,6 +1161,7 @@ export default function App() {
 
   function logout() {
     setUser(null);
+    setPendingRedirect(null);
   }
 
   function orderPlaced(items, total) {
@@ -1179,10 +1182,10 @@ export default function App() {
   else if (page === "product") body = <ProductDetailPage id={productId} goto={goto} addToCart={addToCart} requireLoginThen={requireLoginThen} goBack={goBack} />;
   else if (page === "search") body = <SearchPage goto={goto} addToCart={addToCart} requireLoginThen={requireLoginThen} goBack={goBack} />;
   else if (page === "cart") body = <CartPage cart={cart} changeQty={changeQty} goto={goto} requireLoginThen={requireLoginThen} goBack={goBack} />;
-  else if (page === "login") body = <LoginPage goto={goto} users={users} login={login} pendingRedirect={pendingRedirect} justSignedUpEmail={signupEmail} goBack={goBack} />;
+  else if (page === "login") body = <LoginPage goto={goto} users={users} login={login} pendingRedirect={pendingRedirect} clearPendingRedirect={() => setPendingRedirect(null)} justSignedUpEmail={signupEmail} goBack={goBack} />;
   else if (page === "signup") body = <SignupPage goto={goto} users={users} signup={signup} goBack={goBack} />;
-  else if (page === "account") body = user ? <AccountPage user={user} logout={logout} goto={goto} goBack={goBack} orders={orders} /> : <LoginPage goto={goto} users={users} login={login} pendingRedirect={pendingRedirect} justSignedUpEmail={signupEmail} goBack={goBack} />;
-  else if (page === "checkout") body = user ? <CheckoutPage cart={cart} goto={goto} placeOrder={orderPlaced} goBack={goBack} /> : <LoginPage goto={goto} users={users} login={login} pendingRedirect={"checkout"} justSignedUpEmail={signupEmail} goBack={goBack} />;
+  else if (page === "account") body = user ? <AccountPage user={user} logout={logout} goto={goto} goBack={goBack} orders={orders} /> : <LoginPage goto={goto} users={users} login={login} pendingRedirect={pendingRedirect} clearPendingRedirect={() => setPendingRedirect(null)} justSignedUpEmail={signupEmail} goBack={goBack} />;
+  else if (page === "checkout") body = user ? <CheckoutPage cart={cart} goto={goto} placeOrder={orderPlaced} goBack={goBack} /> : <LoginPage goto={goto} users={users} login={login} pendingRedirect={"checkout"} clearPendingRedirect={() => setPendingRedirect(null)} justSignedUpEmail={signupEmail} goBack={goBack} />;
   else if (page === "orderSuccess") body = <OrderSuccessPage goto={goto} orderId={currentOrderId} />;
   else if (page === "track") body = <OrderTrackPage orderId={currentOrderId} orders={orders} goto={goto} goBack={goBack} />;
   else if (page === "contact") body = <ContactPage goBack={goBack} />;
